@@ -19,6 +19,7 @@ namespace PasswordCracker
             dictionaryWords = GetWordSubset();
 
             var md5 = System.Security.Cryptography.MD5.Create();
+            HashSet<string> type2s = Type2Passwords.CreatePermuationsAndHashes(md5);
 
             bool done = false;
             bool passwordCracked = false;
@@ -44,42 +45,48 @@ namespace PasswordCracker
                         if(base64Hash.Equals(base64WordHash))
                         {
                             passwordCracked = true;
-                            Console.WriteLine($"Password found: {word}");
+                            Console.WriteLine($"Password found from dictionary subset: {word}");
                             stopwatch.Stop();
                             Console.WriteLine($"time it took in seconds: {stopwatch.Elapsed.Seconds}");
                             Console.WriteLine("Check next user? Y or N");
-                            if (Console.ReadLine().Equals("Y"))
+                            if (Console.ReadLine().Equals("N"))
                             {
                                 done = true;
+                                break;
                             }
-                        }
 
-                        if (passwordCracked)
-                        {
-                            break;
+                            if (Console.ReadLine().Equals("Y"))
+                            {
+                                break;
+
+                            }
+
                         }
-                            
+    
                     }
-
 
                     if(passwordCracked)
                     {
+                        continue;
+                    }
+                                                           
+                    Console.Write($"checking permutations of type2 passwords (a) for user {user.Key}");
+                    if (type2s.Contains(base64Hash))
+                    {
+                        Console.WriteLine($"type 2 password found");
+                        passwordCracked = true;
                         break;
                     }
-                    else
+
+                    Console.Write($"Password not cracked for user {user}");
+                    Console.WriteLine("Continue? Y or N");
+                    if (Console.ReadLine().Equals("Y"))
                     {
-                        Console.Write($"Password not cracked for user {user}");
-                        Console.WriteLine("Continue? Y or N");
-                        if (Console.ReadLine().Equals("Y"))
-                        {
-                            done = true;
-                        }
+                        done = true;
+                        break;
                     }
                     
-
                 }
-
-                
             }
 
         }
