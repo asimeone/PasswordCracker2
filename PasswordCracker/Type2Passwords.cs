@@ -6,7 +6,8 @@ namespace PasswordCracker
 {
     public static class Type2Passwords
     {
-        public static HashSet<string> CreatePermuationsAndHashes(System.Security.Cryptography.MD5 md5)
+        public static Dictionary<string, string> CreatePermuationsAndHashes(System.Security.Cryptography.MD5 md5)
+
         {
             string a = "a";
             List<string> permutations = new List<string>();
@@ -23,7 +24,7 @@ namespace PasswordCracker
 
                     for (int k = 0; k <= 9; k++)
                     {
-                        char[] threeNumberPerm = $"{a}{i}{j}".ToCharArray();
+                        char[] threeNumberPerm = $"{a}{i}{j}{k}".ToCharArray();
                         permute(threeNumberPerm, 0, threeNumberPerm.Length - 1, permutations);
                     }
                 }
@@ -67,26 +68,35 @@ namespace PasswordCracker
                     }
                 }
             }
-            HashSet<string> type2PasswordHashes = new HashSet<string>();
-            //shortcut to not doing permutations correctly
+
+            Dictionary<string, string> type2PassAndHash = new Dictionary<string, string>();
             foreach(string permutation in permutations)
             {
                 var wordBytes = Encoding.UTF8.GetBytes(permutation);
                 var hash = md5.ComputeHash(wordBytes);
                 var base64WordHash = Convert.ToBase64String(hash);
-                if(!type2PasswordHashes.Contains(base64WordHash))
+                
+                if(!type2PassAndHash.ContainsKey(base64WordHash))
                 {
-                    type2PasswordHashes.Add(base64WordHash);
+                    type2PassAndHash.Add(base64WordHash, permutation);
                 }
             }
-            return type2PasswordHashes;
+            return type2PassAndHash;
         }
 
         static void permute(char[] arry, int i, int n, List<string> s)
         {
             int j;
             if (i == n)
-                s.Add(new string(arry));
+            {
+                string perm = new string(arry);
+                if(!s.Contains(perm))
+                {
+                    s.Add(perm);
+                }
+                
+            }
+                
             //Console.WriteLine(arry);
             else
             {

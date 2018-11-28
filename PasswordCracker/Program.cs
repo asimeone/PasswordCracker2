@@ -19,23 +19,22 @@ namespace PasswordCracker
             dictionaryWords = GetWordSubset();
 
             var md5 = System.Security.Cryptography.MD5.Create();
-            HashSet<string> type2s = Type2Passwords.CreatePermuationsAndHashes(md5);
+            Dictionary<string, string> type2s = Type2Passwords.CreatePermuationsAndHashes(md5);
 
             bool done = false;
             bool passwordCracked = false;
-            while (!done || !passwordCracked)
+            while (!done && !passwordCracked)
             {
-                foreach(KeyValuePair<string, string> user in users)
+                foreach(KeyValuePair<string, string> userNameAndBase64Pass in users)
                 {
-                    Console.WriteLine($"User {user.Key} ... starting timer...");
+                    Console.WriteLine($"User: {userNameAndBase64Pass.Key} ... starting timer...");
                     Stopwatch stopwatch = new Stopwatch();
                     stopwatch.Start();
 
-                    string base64Hash = user.Value;
+                    string base64Hash = userNameAndBase64Pass.Value;
 
                     passwordCracked = false;
 
-                    
                     foreach(string word in dictionaryWords)
                     {
                         var wordBytes = Encoding.UTF8.GetBytes(word);
@@ -49,16 +48,13 @@ namespace PasswordCracker
                             stopwatch.Stop();
                             Console.WriteLine($"time it took in seconds: {stopwatch.Elapsed.Seconds}");
                             Console.WriteLine("Check next user? Y or N");
-                            if (Console.ReadLine().Equals("N"))
-                            {
-                                done = true;
-                                break;
-                            }
-
                             if (Console.ReadLine().Equals("Y"))
                             {
                                 break;
-
+                            }
+                            else
+                            {
+                                return;
                             }
 
                         }
@@ -70,16 +66,17 @@ namespace PasswordCracker
                         continue;
                     }
                                                            
-                    Console.Write($"checking permutations of type2 passwords (a) for user {user.Key}");
-                    if (type2s.Contains(base64Hash))
+                    Console.WriteLine($"checking permutations of type2 passwords (a) for user: {userNameAndBase64Pass.Key}");
+                    if (type2s.ContainsKey(base64Hash))
                     {
                         Console.WriteLine($"type 2 password found");
+                        Console.WriteLine($"password: {type2s[base64Hash]}");
                         passwordCracked = true;
                         break;
                     }
 
-                    Console.Write($"Password not cracked for user {user}");
-                    Console.WriteLine("Continue? Y or N");
+                    Console.WriteLine($"Password not cracked for user {userNameAndBase64Pass}");
+                    Console.WriteLine("Continue to next user? Y or N");
                     if (Console.ReadLine().Equals("Y"))
                     {
                         done = true;
@@ -88,6 +85,9 @@ namespace PasswordCracker
                     
                 }
             }
+
+            Console.WriteLine("Press enter to close");
+            Console.ReadLine();//close app
 
         }
 
